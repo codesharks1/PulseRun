@@ -62,13 +62,9 @@ public static class SpikePracticeBuilder
         Undo.RegisterCreatedObjectUndo(group, "Create Spike Group");
         SceneManager.MoveGameObjectToScene(group, scene);
         Transform player = runner.transform;
-        float distance = runner.followNeonRunway ? NeonRunwayPath.FindDistance(player.position) + 10f : 10f;
-        Vector3 forward = runner.followNeonRunway ? NeonRunwayPath.GetForward(distance) : player.forward;
-        Vector3 position = runner.followNeonRunway
-            ? NeonRunwayPath.GetPoint(distance)
-            : player.position + player.forward * distance;
+        Vector3 forward = Vector3.forward;
+        Vector3 position = player.position + forward * 10f;
         // The generated road's top is y=0; for another scene, probe its Ground surface.
-        if (!runner.followNeonRunway)
         {
             if (!Physics.Raycast(position + Vector3.up*10f, Vector3.down, out RaycastHit hit,
                 30f, runner.groundMask, QueryTriggerInteraction.Ignore))

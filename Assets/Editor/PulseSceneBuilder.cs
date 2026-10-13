@@ -36,7 +36,7 @@ public static class PulseSceneBuilder
         pink = Mat("Pink Light", new Color(.65f,.03f,.4f), new Color(1f,.04f,.65f)*4f, .5f);
         core = Mat("Player Core", new Color(.035f,.3f,.48f), new Color(.015f,.18f,.28f), .85f);
 
-        // Arc-length sampled centerline, gentle bend after the first straight.
+        // Straight centerline; runtime movement is always along world +Z.
         for (int i=-12;i<150;i++)
         {
             Vector3 a=Path(i), b=Path(i+1), forward=(b-a).normalized;
@@ -120,7 +120,7 @@ public static class PulseSceneBuilder
         EditorSceneManager.CloseScene(scene,true);if(previous.IsValid())SceneManager.SetActiveScene(previous);
         AssetDatabase.SaveAssets();Debug.Log("PulseRun scene created: "+path);
     }
-    static Vector3 Path(float s) { float d=Mathf.Max(0,s-25);float angle=d/75;return s<=25?new Vector3(0,0,s):new Vector3(75*(1-Mathf.Cos(angle)),0,25+75*Mathf.Sin(angle)); }
+    static Vector3 Path(float s) { return new Vector3(0,0,s); }
     static Material Mat(string name,Color color,Color emission,float smooth)
     {
         var m=new Material(Shader.Find("Universal Render Pipeline/Lit"));m.name=name;m.SetColor("_BaseColor",color);m.SetFloat("_Smoothness",smooth);m.SetFloat("_Metallic",.25f);

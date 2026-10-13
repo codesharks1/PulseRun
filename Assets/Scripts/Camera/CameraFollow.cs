@@ -20,8 +20,8 @@ public class CameraFollow : MonoBehaviour
     {
         if (target == null) return;
         currentVelocity = Vector3.zero;
-        transform.position = target.position + target.TransformDirection(offset);
-        Vector3 lookTarget = target.position + target.forward * lookAhead + Vector3.up * lookHeight;
+        transform.position = target.position + offset;
+        Vector3 lookTarget = target.position + Vector3.forward * lookAhead + Vector3.up * lookHeight;
         Vector3 direction = lookTarget - transform.position;
         if (direction.sqrMagnitude > 0.001f)
             transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
@@ -32,10 +32,9 @@ public class CameraFollow : MonoBehaviour
         if (target == null)
             return;
 
-        // offset 使用目标的局部方向。
-        // 玩家以后转弯时，相机会跟着调整到新的侧后方。
+        // 直线路径使用固定世界坐标偏移。
         Vector3 desiredPosition =
-            target.position + target.TransformDirection(offset);
+            target.position + offset;
 
         transform.position = Vector3.SmoothDamp(
             transform.position,
@@ -47,7 +46,7 @@ public class CameraFollow : MonoBehaviour
         // 不盯着玩家中心，而是看向玩家前方。
         Vector3 lookTarget =
             target.position +
-            target.forward * lookAhead +
+            Vector3.forward * lookAhead +
             Vector3.up * lookHeight;
 
         Vector3 lookDirection = lookTarget - transform.position;

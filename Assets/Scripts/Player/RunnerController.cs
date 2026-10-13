@@ -20,9 +20,6 @@ public class RunnerController : MonoBehaviour
     [Min(0.1f)] public float gravityMultiplier = 2f;
     public float EffectiveGravity => Mathf.Max(0.01f, Mathf.Abs(Physics.gravity.y) * Mathf.Max(0.1f, gravityMultiplier));
 
-    [Header("原始 NeonRunway 弯道（直线练习场景不要开启）")]
-    public bool followNeonRunway;
-
     [Header("地面检测")]
     public LayerMask groundMask;
     public float groundCheckDistance = 0.06f;
@@ -39,6 +36,10 @@ public class RunnerController : MonoBehaviour
     private Rigidbody body;
     private BoxCollider box;
 
+    // 提供只读的落地状态，供音符奖励判断；不改变跳跃逻辑。
+    public bool IsGrounded => body != null && box != null &&
+        body.linearVelocity.y <= 0.1f && CheckGrounded();
+
     private bool jumpRequested;
     private float jumpPressedAt;
     private LineRenderer jumpPulse;
@@ -49,27 +50,14 @@ public class RunnerController : MonoBehaviour
     private float flipTime;
     private float flightDuration;
     private Quaternion restingRotation;
-    private float laneOffset;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    // 初始化引用与物理约束。
     void Awake()
     {
         body = GetComponent<Rigidbody>();
         box = GetComponent<BoxCollider>();
 
-        // A curved road requires movement on both X and Z.
-        // Freeze physical tipping, but turn deliberately using MoveRotation.
-        body.constraints = RigidbodyConstraints.FreezeRotation;
-        if (!followNeonRunway)
-            body.constraints |= RigidbodyConstraints.FreezePositionX;
-
-        if (followNeonRunway)
-        {
-            float distance = NeonRunwayPath.FindDistance(body.position);
-            Vector3 forward = NeonRunwayPath.GetForward(distance);
-            Vector3 right = Vector3.Cross(Vector3.up, forward);
-            laneOffset = Mathf.Clamp(Vector3.Dot(
-                body.position - NeonRunwayPath.GetPoint(distance), right), -2.5f, 2.5f);
-        }
+        // 直线跑酷：锁定左右位置和实体旋转，只允许向前移动与上下跳跃。
+        body.constraints = RigidbodyConstraints.FreezeRotation | RigidbodyConstraints.FreezePositionX;
 
         if (visual != null)
             restingRotation = visual.localRotation;
@@ -104,6 +92,7 @@ public class RunnerController : MonoBehaviour
         var emission = frictionParticles.emission;
         emission.enabled = emit;
         // 只控制新粒子的发射，空中已有粒子继续自然消失。
+        // false代表子物体不开启粒子效果
         if (emit && !frictionParticles.isPlaying)
             frictionParticles.Play(false);
     }
@@ -129,7 +118,7 @@ public class RunnerController : MonoBehaviour
             float progress =
                 Mathf.Clamp01(flipTime / flightDuration);
 
-            // 沿 +Z 前进时，绕 X 轴向前翻一圈。
+            // 绕 X 轴翻转半圈；仅旋转显示模型，不转动物理碰撞盒。
             visual.localRotation =
                 restingRotation *
                 Quaternion.Euler(progress * 180f, 0f, 0f);
@@ -178,29 +167,9 @@ public class RunnerController : MonoBehaviour
             // 这一帧地面检测仍然为真，但已经起跳，需要立即停止发射。
             grounded = false;
         }
-        // 保留竖直速度，让重力继续控制升降。
-        if (followNeonRunway)
-        {
-            float distance = NeonRunwayPath.FindDistance(body.position);
-            float nextDistance = Mathf.Min(
-                distance + Mathf.Max(0f, forwardSpeed) * Time.fixedDeltaTime,
-                NeonRunwayPath.EndDistance);
-
-            Vector3 forward = NeonRunwayPath.GetForward(nextDistance);
-            Vector3 right = Vector3.Cross(Vector3.up, forward);
-            Vector3 nextPosition = NeonRunwayPath.GetPoint(nextDistance) + right * laneOffset;
-
-            // Only steer in the horizontal plane; leave gravity/jumping intact.
-            Vector3 horizontalVelocity = (nextPosition - body.position) / Time.fixedDeltaTime;
-            velocity.x = horizontalVelocity.x;
-            velocity.z = horizontalVelocity.z;
-            body.MoveRotation(Quaternion.LookRotation(forward, Vector3.up));
-        }
-        else
-        {
-            velocity.x = 0f;
-            velocity.z = forwardSpeed;
-        }
+        // 每个物理帧固定向前速度，保留跳跃和重力产生的竖直速度。
+        velocity.x = 0f;
+        velocity.z = Mathf.Max(0f, forwardSpeed);
         body.linearVelocity = velocity;
         bool moving = velocity.x * velocity.x + velocity.z * velocity.z > 0.01f;
         SetFrictionEmission(grounded && moving);
@@ -256,11 +225,12 @@ public class RunnerController : MonoBehaviour
         jumpPulse.enabled = true;
         UpdateJumpPulse();
     }
-
+    // 光圈的播放
     private void UpdateJumpPulse()
     {
         if (!pulseActive || jumpPulse == null) return;
         float progress = (Time.time - pulseStartedAt) / Mathf.Max(0.01f, jumpPulseDuration);
+        // 进度大于1或不开启光圈的时候清空
         if (progress >= 1f || !showJumpPulse) { ClearJumpPulse(); return; }
         float radius = Mathf.Lerp(0.35f, 0.85f, progress);
         for (int i = 0; i < jumpPulse.positionCount; i++)
@@ -304,13 +274,13 @@ public class RunnerController : MonoBehaviour
             Mathf.Abs(colliderSize.z) * 0.45f
         );
         return Physics.BoxCast(
-            origin, // 起点
-            halfExtents, // 检测盒的尺寸
-            Vector3.down, // 方向
-            out _, //命中信息
-            body.rotation, //检测盒的姿态
-            0.08f + groundCheckDistance, //中心最多移动多元
-            groundMask, //检查的Layer
+            origin,
+            halfExtents,
+            Vector3.down,
+            out _,
+            body.rotation,
+            0.08f + groundCheckDistance,
+            groundMask,
             QueryTriggerInteraction.Ignore
         );
     }

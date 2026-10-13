@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum RunChartMarkType { Jump, StayGrounded }
+// 保持旧值0、1不变，已有谱面仍然兼容。
+public enum RunChartMarkType { Jump, StayGrounded, BoostStart, BoostEnd }
 
 [Serializable]
 public class RunChartMark

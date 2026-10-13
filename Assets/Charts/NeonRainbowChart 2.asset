@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39c3feaa33277c045b75ac211540f47f, type: 3}
+  m_Name: NeonRainbowChart 2
+  m_EditorClassIdentifier: Assembly-CSharp::RunChart
+  music: {fileID: 8300000, guid: eaf56a2dbc62598468a2370614781da3, type: 3}
+  recording:
+    startOffsetSeconds: 0
+    forwardSpeed: 8
+    jumpHeight: 1.5
+    gravity: 19.62
+    spawnPosition: {x: 0, y: 0.99215204, z: 0}
+    endSongTime: 22.527334
+    marks:
+    - type: 0
+      songTime: 1.5139999
+    - type: 0
+      songTime: 2.8793333
+    - type: 0
+      songTime: 4.2233334
+    - type: 1
+      songTime: 5.5886664
+    - type: 0
+      songTime: 6.975333
+    - type: 0
+      songTime: 8.404667
+    - type: 1
+      songTime: 9.663333
+    - type: 0
+      songTime: 11.071333
+    - type: 1
+      songTime: 12.522
+    - type: 0
+      songTime: 13.887333
+    - type: 0
+      songTime: 15.252666
+    - type: 0
+      songTime: 16.660667
+    - type: 1
+      songTime: 18.026
+    - type: 0
+      songTime: 19.434
+    - type: 1
+      songTime: 20.799334

@@ -20,6 +20,7 @@ public class RunMusicClock : MonoBehaviour
     private double scheduledStart;
     private float actualOffset;
     private bool scheduled;
+    public event System.Action RunStopped;
 
     public bool IsRunning => scheduled && AudioSettings.dspTime >= scheduledStart &&
         source != null && source.isPlaying;
@@ -44,6 +45,7 @@ public class RunMusicClock : MonoBehaviour
         if (preparing != null) { StopCoroutine(preparing); preparing = null; }
         scheduled = false;
         if (source != null) source.Stop();
+        RunStopped?.Invoke();
     }
 
     public void RestartRun()

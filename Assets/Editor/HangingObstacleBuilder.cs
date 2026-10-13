@@ -69,16 +69,8 @@ public static class HangingObstacleBuilder
             return false;
         }
 
-        float distance = runner.followNeonRunway
-            ? NeonRunwayPath.FindDistance(runner.transform.position) + 22f : 22f;
-        if (runner.followNeonRunway && distance > NeonRunwayPath.EndDistance - 2f)
-        {
-            Debug.LogWarning("玩家前方剩余道路不足，未放置悬挂障碍。");
-            return false;
-        }
-        Vector3 position = runner.followNeonRunway ? NeonRunwayPath.GetPoint(distance)
-            : runner.transform.position + Vector3.forward * distance;
-        Vector3 forward = runner.followNeonRunway ? NeonRunwayPath.GetForward(distance) : Vector3.forward;
+        Vector3 position = runner.transform.position + Vector3.forward * 22f;
+        Vector3 forward = Vector3.forward;
         Physics.SyncTransforms();
         if (!Physics.Raycast(position + Vector3.up * 10f, Vector3.down,
             out RaycastHit ground, 30f, runner.groundMask, QueryTriggerInteraction.Ignore))
